@@ -28,10 +28,13 @@ if __name__ == "__main__":
     test_cond = generate_initial_conditions(test_grid, height_list, width_list)
     my_solv = Solver(test_grid, test_cond, advection_equations)
     my_model = my_solv.generate_model(2)
-    res = my_solv.integrate_until(my_model, 256)
+    res = my_solv.integrate_until(my_model, test_cond, 56)
+    res2 = my_solv.integrate_gap(my_model, res, 56, 256)
+    for k, v in res2.items():
+        print(k, v.shape)
     dr = xarray.DataArray(
-        res['concentration'].numpy().squeeze(),
+        res2['concentration'].numpy().squeeze(),
         dims=('time', 'sample', 'x'),
     )
-    dr.isel(time=[0, 10, 128], sample=[4, 10, 16]).plot(col='sample', hue='time')
+    dr.isel(time=[0, 10, 200], sample=[4, 10, 16]).plot(col='sample', hue='time')
     plt.show()
