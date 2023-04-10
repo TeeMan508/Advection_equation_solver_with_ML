@@ -20,6 +20,7 @@ def generate_grid(grid_resolution: int, grid_length: int) -> grids.Grid:
     return result_grid
 
 
+
 def generate_initial_conditions(grid: grids.Grid, height_list: np.array, width_list: np.array) -> dict:
     def make_square(x, height=1.0, center=0.25, width=0.1):
         nx = x.shape[0]
@@ -45,3 +46,12 @@ def generate_initial_conditions(grid: grids.Grid, height_list: np.array, width_l
     }
 
     return initial_state
+
+
+def wrap_as_xarray(integrated, time_steps, x):
+    dr = xarray.DataArray(
+        integrated['concentration'].numpy().squeeze(),
+        dims=('time', 'sample', 'x'),
+        coords={'time': time_steps, 'x': x.squeeze()}
+    )
+    return dr
