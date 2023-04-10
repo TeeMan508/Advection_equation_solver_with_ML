@@ -11,19 +11,10 @@ from datadrivenpdes.core import tensor_ops
 from datadrivenpdes.advection import equations as advection_equations
 from datadrivenpdes.pipelines import model_utils
 
+
 class ML:
-    # num_time_steps = 4,  # multi-step loss function
-    # stencil_size = 3
-    # kernel_size = (3, 1)
-    # num_layers = 4
-    # filters = 32
-    # constrained_accuracy_order = 1
-    # learned_keys = {'concentration_edge_x', 'concentration_edge_y'}  # finite volume view, use edge concentration
-    # activation = 'relu'
-    #
-    def __init__(self, initial_state: dict):
-        self.initial_state = initial_state
-        # self.equation_system = equation_system
+
+    # def __init__(self):
 
     def generate_model(self, grid: grids.Grid):
         model = models.PseudoLinearModel(
@@ -44,20 +35,18 @@ class ML:
         return solution
 
     def reference_solution(self, fine_grid, coarse_grid,
-                           coarse_time_steps):
+                           coarse_time_steps, initial_cond):
         equation = advection_equations.VanLeerAdvection(cfl_safety_factor=0.5)
         key_defs = equation.key_definitions  # записали наши концентрации и скорости
         model = models.FiniteDifferenceModel(equation, fine_grid)  # МКО
         coarse_ratio = fine_grid.size_x // coarse_grid.size_x  # целая часть = 256/32
         steps = np.arange(0, coarse_time_steps * coarse_ratio + 1, coarse_ratio)
-        integrated_fine = self.integrate_until(model, self.initial_state, steps)
+        integrated_fine = self.integrate_until(model, initial_cond, steps)
         # integrated_fine = integrate.integrate_steps(model, self.initial_state, steps)
 
         integrated_coarse = tensor_ops.regrid(integrated_fine, key_defs, fine_grid,
                                               coarse_grid)  # из мелкой в грубую подставили вычисленные значения
         return integrated_coarse
-
-
 
     def make_train_data(self,integrated_coarse, fine_time_steps, example_time_steps=4):
         # equation = advection_equations.VanLeerAdvection(cfl_safety_factor=0.5)
@@ -84,9 +73,6 @@ class ML:
 
         train_output = tf.stack(output_list, axis=1)
 
-
-        # print('\n train_output shape:', train_output.shape)
-
         assert train_output.shape[0] == train_input['concentration'].shape[0]  # merged_sample
         assert train_output.shape[2] == train_input['concentration'].shape[1]  # x
         assert train_output.shape[3] == train_input['concentration'].shape[2]  # y
@@ -104,14 +90,15 @@ class ML:
         np.random.seed(42)
 
         history = model.fit(
-            train_input, train_output, epochs=10, batch_size=32,
+            train_input, train_output, epochs=120, batch_size=32,
             verbose=1, shuffle=True
         )
 
-        model_utils.save_weights(model, f'weights_1d_1056epochs.h5')
+        model_utils.save_weights(model, f'weights_1d_120epochs.h5')
 
         df_history = pd.DataFrame(history.history)
         df_history.plot(marker='.')
+        plt.suptitle("loss",fontsize=8)
         plt.show()
 
         df_history['loss'][3:].plot(marker='.')
