@@ -140,7 +140,7 @@ if __name__ == "__main__":
     (dr_sol_test.isel(time=[0, 16, 64, 128, 256], sample=[4, 10, 16])
      .plot(hue='model', col='time', row='sample', alpha=0.6, linewidth=2)
      )
-
+#
     plt.ylim(0, 1)
 
     (dr_sol_test.isel(time=[0, 16, 64, 256], sample=16).rename({'time': 'Time step'})
