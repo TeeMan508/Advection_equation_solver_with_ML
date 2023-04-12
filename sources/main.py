@@ -59,6 +59,17 @@ if __name__ == "__main__":
     nn = ML()
     model_nn = nn.generate_model(coarse_grid)
     integrated_ref = nn.reference_solution(fine_grid, coarse_grid, end_time_step, test_cond)
+
+    diff = np.array([res.copy()] * (end_time_step + 1 - begin_time_step))
+    for i in range(begin_time_step, end_time_step + 1):
+        print("time step =", i)
+        diff[i]["x_velocity"] = np.sum(np.square(integrated_ref.get("x_velocity") - res.get("x_velocity")))
+        diff[i]["y_velocity"] = np.sum(np.square(integrated_ref.get("y_velocity") - res.get("y_velocity")))
+        diff[i]["concentration"] = np.sum(np.square(integrated_ref.get("concentration") - res.get("concentration")))
+        print("x_Velocity diff = ", diff[i]["x_velocity"])
+        print("y_Velocity diff = ", diff[i]["y_velocity"])
+        print("Concentration diff = ", diff[i]["concentration"])
+
     train_input, train_output = nn.make_train_data(integrated_ref, end_time_step)
 
     # # plot train data
@@ -73,7 +84,7 @@ if __name__ == "__main__":
     # plt.show()
 
     # # Включить при первом запуске, далее закомментировать
-    nn.fit(model_nn, train_input, train_output)
+    # nn.fit(model_nn, train_input, train_output)
 
     model_utils.load_weights(model_nn, "weights_1d_120epochs.h5")
 
@@ -138,3 +149,10 @@ if __name__ == "__main__":
     plt.savefig('1d-test-mae.png', dpi=288, bbox_inches='tight')
 
     print("Вы молодцы!")
+
+
+    print("res: ", res)
+    print("integrated_ref: ", integrated_ref)
+
+    # diff = res - integrated_ref
+    # print("Diff: ", diff)
