@@ -33,10 +33,23 @@ class Solver:
             )
         return model
 
-    def integrate_until(self, model, initial_cond: dict, final_time_step: int):
-        time_steps = np.arange(0, final_time_step + 1)
+    # def integrate_until(self, model, initial_cond: dict, final_time_step: int):
+    #     time_steps = np.arange(0, final_time_step + 1)
+    #     solution = integrate.integrate_steps(model, initial_cond, time_steps)
+    #     # key_defs = solution.key_definitions
+    #     return solution
+
+    def integrate_until(self, model, initial_cond: dict, time_steps: int):
+        # time_steps = np.arange(0, final_time_step + 1)
         solution = integrate.integrate_steps(model, initial_cond, time_steps)
+        # key_defs = solution.key_definitions
         return solution
+
+    # def integrate_until_we_all_die(self, model, initial_cond: dict, coarse_ratio: int, fine_time_steps: int):
+    #     time_steps = np.arange(0, fine_time_steps * coarse_ratio + 1, coarse_ratio)
+    #     solution = integrate.integrate_steps(model, initial_cond, time_steps)
+    #     # key_defs = solution.key_definitions
+    #     return solution
 
     def integrate_gap(self, model, begin_cond: dict, begin_time_step:int, end_time_step: int):
         new_cond = {'concentration': begin_cond['concentration'][begin_time_step],
