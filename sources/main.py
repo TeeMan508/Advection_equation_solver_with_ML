@@ -27,6 +27,24 @@ width_list = np.arange(1/16, 1/4, 1/16)
 begin_time_step = 0
 end_time_step = 256
 
+def mse_each_iter(begin_time_step, end_time_step, numerical_sol, ml_sol, output=True):
+
+    diff = np.array([numerical_sol.copy()] * (end_time_step + 1 - begin_time_step))
+
+    for i in range(begin_time_step, end_time_step + 1):
+        diff[i]["x_velocity"] = np.sqrt(np.sum(np.square(ml_sol.get("x_velocity") - numerical_sol.get("x_velocity"))))
+        diff[i]["y_velocity"] = np.sqrt(np.sum(np.square(ml_sol.get("y_velocity") - numerical_sol.get("y_velocity"))))
+        diff[i]["concentration"] = np.sqrt(np.sum(np.square(ml_sol.get("concentration") - numerical_sol.get("concentration"))))
+        
+    if output:
+        for i in range(begin_time_step, end_time_step + 1):
+            print("time step =", i)
+       	    print("x_Velocity diff = ", diff[i]["x_velocity"])
+            print("y_Velocity diff = ", diff[i]["y_velocity"])
+            print("Concentration diff = ", diff[i]["concentration"])
+
+
+
 if __name__ == "__main__":
     # # test = reference on fine grid
     # # test_2d = 2 orders of accuracy on coarse grid
@@ -59,17 +77,7 @@ if __name__ == "__main__":
     nn = ML()
     model_nn = nn.generate_model(coarse_grid)
     integrated_ref = nn.reference_solution(fine_grid, coarse_grid, end_time_step, test_cond)
-
-    diff = np.array([res.copy()] * (end_time_step + 1 - begin_time_step))
-    for i in range(begin_time_step, end_time_step + 1):
-        print("time step =", i)
-        diff[i]["x_velocity"] = np.sum(np.square(integrated_ref.get("x_velocity") - res.get("x_velocity")))
-        diff[i]["y_velocity"] = np.sum(np.square(integrated_ref.get("y_velocity") - res.get("y_velocity")))
-        diff[i]["concentration"] = np.sum(np.square(integrated_ref.get("concentration") - res.get("concentration")))
-        print("x_Velocity diff = ", diff[i]["x_velocity"])
-        print("y_Velocity diff = ", diff[i]["y_velocity"])
-        print("Concentration diff = ", diff[i]["concentration"])
-
+    
     train_input, train_output = nn.make_train_data(integrated_ref, end_time_step)
 
     # # plot train data
