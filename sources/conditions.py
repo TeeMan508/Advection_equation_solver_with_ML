@@ -12,6 +12,11 @@ from datadrivenpdes.advection import equations as advection_equations
 from datadrivenpdes.pipelines import model_utils
 
 
+def estimate_error(data1, data2):
+    buf = np.sqrt(np.sum(np.square(data1.get("concentration") - data2.get("concentration")))/len(data1.get('concentration')))
+    return buf
+
+
 def generate_grid(grid_resolution: int, grid_length: int) -> grids.Grid:
     result_grid = grids.Grid(
         size_x=grid_resolution, size_y=1,

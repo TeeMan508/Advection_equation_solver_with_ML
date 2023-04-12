@@ -39,7 +39,7 @@ class Solver:
     #     # key_defs = solution.key_definitions
     #     return solution
 
-    def integrate_until(self, model, initial_cond: dict, time_steps: int):
+    def integrate_until(self, model, initial_cond: dict, time_steps):
         # time_steps = np.arange(0, final_time_step + 1)
         solution = integrate.integrate_steps(model, initial_cond, time_steps)
         # key_defs = solution.key_definitions
@@ -51,13 +51,13 @@ class Solver:
     #     # key_defs = solution.key_definitions
     #     return solution
 
-    def integrate_gap(self, model, begin_cond: dict, begin_time_step:int, end_time_step: int):
-        new_cond = {'concentration': begin_cond['concentration'][begin_time_step],
-                    'x_velocity': begin_cond['x_velocity'][begin_time_step],
-                    'y_velocity': begin_cond['y_velocity'][begin_time_step]}
-        time_steps = np.arange(begin_time_step, end_time_step + 1)
-        solution = integrate.integrate_steps(model, new_cond, time_steps)
-        return solution
+def integrate_gap(model, begin_cond: dict, begin_time_step:int, end_time_step: int):
+    new_cond = {'concentration': begin_cond['concentration'][begin_time_step],
+                'x_velocity': begin_cond['x_velocity'][begin_time_step],
+                'y_velocity': begin_cond['y_velocity'][begin_time_step]}
+    time_steps = np.arange(int(begin_time_step), int(end_time_step) + 1)
+    solution = integrate.integrate_steps(model, new_cond, time_steps)
+    return solution
 
     # def solve_gap(self, model, initial_cond: dict, final_time_step: int):
     #     sub_result = self.integrate_until(model, initial_cond, final_time_step)
