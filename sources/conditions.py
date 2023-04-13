@@ -21,9 +21,11 @@ def generate_grid(grid_resolution: int, grid_length: int) -> grids.Grid:
 
 
 
-def generate_initial_conditions(grid: grids.Grid, height_list: np.array, width_list: np.array, geometry_type="square":str) -> dict:
+def generate_initial_conditions(grid: grids.Grid, height_list: np.array, width_list: np.array, geometry_type="gaussian") -> dict:
 
-"choose geometry_type like \"square\" or \"gaussian\" - quasi-random square"
+    """
+    choose geometry_type square or gaussian - quasi-random square
+    """
 
     def make_square(x, height=1.0, center=0.25, width=0.1):
         nx = x.shape[0]
@@ -32,6 +34,21 @@ def generate_initial_conditions(grid: grids.Grid, height_list: np.array, width_l
         return c
 
     def make_multi_square(x, height_list, width_list):
+        c_list = []
+        for height in height_list:
+            for width in width_list:
+                c_temp = make_square(x, height=height, width=width)
+                c_list.append(c_temp)
+
+        return np.array(c_list)
+
+    def make_triangle(x, height=1.0, center=0.25, width=0.1):
+        nx = x.shape[0]
+        c = np.zeros_like(x)
+        c[int((center - width) * nx):int((center + width) * nx)] = height
+        return c
+
+    def make_multi_triangle(x, height_list, width_list):
         c_list = []
         for height in height_list:
             for width in width_list:
@@ -93,6 +110,14 @@ def generate_initial_conditions(grid: grids.Grid, height_list: np.array, width_l
             'concentration': c_init_guass.astype(np.float32),  # tensorflow code expects float32
             'x_velocity': np.ones(c_init_guass.shape, np.float32) * 1.0,
             'y_velocity': np.zeros(c_init_guass.shape, np.float32)
+        }
+    elif geometry_type == "triangle":
+        x, _ = grid.get_mesh()
+        c_init = make_multi_triangle(x, height_list=height_list, width_list=width_list)
+        initial_state = {
+            'concentration': c_init.astype(np.float32),  # tensorflow code expects float32
+            'x_velocity': np.ones(c_init.shape, np.float32) * 1.0,
+            'y_velocity': np.zeros(c_init.shape, np.float32)
         }
 
     return initial_state
